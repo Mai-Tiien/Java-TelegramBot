@@ -18,9 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -59,6 +57,8 @@ public class Main extends TelegramLongPollingBot{
     public void onUpdateReceived(Update update) {
         Long chatId = getChatId(update);
         SendMessage message = new SendMessage();
+
+        // Task 1
         if (update.hasMessage() && update.getMessage().getText().equals("/start")){
             sendImage("level-1", chatId);
 
@@ -72,11 +72,20 @@ public class Main extends TelegramLongPollingBot{
                 );
                 message.setParseMode("markdown");
                 message.setChatId(chatId);
+                List<String> buttons = Arrays.asList(
+                    "Сплести маскувальну сітку (+15 монет)",
+                    "Зібрати кошти патріотичними піснями (+15 монет)",
+                    "Вступити в Міністерство Мемів України (+15 монет)",
+                    "Запустити волонтерську акцію (+15 монет)",
+                    "Вступити до лав тероборони (+15 монет)"
+                );
+
+                buttons = getRandom3(buttons);
 
                 attachButtons(message, Map.of(
-                            "Сплести маскувальну сітку (+15 монет)", "level_1_task",
-                            "Зібрати кошти патріотичними піснями (+15 монет) ","level_1_task",
-                            "Вступити в Міністерство Мемів України (+15 монет) ", "level_1_task"
+                            buttons.get(0), "level_1_task",
+                            buttons.get(1),"level_1_task",
+                            buttons.get(2), "level_1_task"
                         ));
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -84,6 +93,7 @@ public class Main extends TelegramLongPollingBot{
             sendApiMethodAsync(message);
         }
 
+        // Task 2
         if (update.hasCallbackQuery()){
             if (update.getCallbackQuery().getData().equals("level_1_task")){
                 sendImage("level-2", chatId);
@@ -91,11 +101,20 @@ public class Main extends TelegramLongPollingBot{
                     message.setText(Objects.requireNonNull(readFile(Path.of("task/text2.txt"))));
                     message.setParseMode("markdown");
                     message.setChatId(chatId);
+                    List<String> buttons = Arrays.asList(
+                            "Зібрати комарів для нової біологічної зброї (+15 монет)",
+                            "Пройти курс молодого бійця (+15 монет)",
+                            "Задонатити на ЗСУ (+15 монет)",
+                            "Збити дрона банкою огірків (+15 монет)",
+                            "Зробити запаси коктейлів Молотова (+15 монет)"
+                    );
+
+                    buttons = getRandom3(buttons);
 
                     attachButtons(message, Map.of(
-                            "Зібрати комарів для нової біологічної зброї (+15 монет) ", "level_2_task",
-                            "Пройти курс молодого бійця (+15 монет) ","level_2_task",
-                            "Задонатити на ЗСУ (+15 монет)  ", "level_2_task"
+                            buttons.get(0), "level_2_task",
+                            buttons.get(1),"level_2_task",
+                            buttons.get(2), "level_2_task"
                     ));
                     sendApiMethodAsync(message);
                 } catch (IOException e) {
@@ -104,6 +123,7 @@ public class Main extends TelegramLongPollingBot{
             }
         }
 
+        // Task 3
         if (update.hasCallbackQuery()){
             if (update.getCallbackQuery().getData().equals("level_2_task")){
                 sendImage("level-3", chatId);
@@ -112,15 +132,61 @@ public class Main extends TelegramLongPollingBot{
                     message.setParseMode("markdown");
                     message.setChatId(chatId);
 
+                    List<String> buttons = Arrays.asList(
+                            "Злітати на тестовий рейд по чотирьох позиціях (+15 монет)",
+                            "Відвезти гуманітарку на передок (+15 монет)",
+                            "Знайти зрадника та здати в СБУ (+15 монет)",
+                            "Навести арту на орків (+15 монет)",
+                            "Притягнути танк трактором (+15 монет)"
+                    );
+
+                    buttons = getRandom3(buttons);
+
                     attachButtons(message, Map.of(
-                            "Злітати на тестовий рейд по чотирьох позиціях (+15 монет)  ", "level_3_task",
-                            "Відвезти гуманітарку на передок (+15 монет) ","level_3_task",
-                            "Знайти зрадника та здати в СБУ (+15 монет) ", "level_3_task"
+                            buttons.get(0), "level_3_task",
+                            buttons.get(1),"level_3_task",
+                            buttons.get(2), "level_3_task"
                     ));
                     sendApiMethodAsync(message);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+            }
+        }
+
+        // Task 4
+        if (update.hasCallbackQuery()){
+            if (update.getCallbackQuery().getData().equals("level_3_task")){
+                sendImage("level-4", chatId);
+                try {
+                    message.setText(Objects.requireNonNull(readFile(Path.of("task/text4.txt"))));
+                    message.setParseMode("markdown");
+                    message.setChatId(chatId);
+
+                    attachButtons(message, Map.of(
+                            "Купити Джавелін (50 монет)", "level_4_task"
+                    ));
+                    sendApiMethodAsync(message);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        // Final
+        if (update.hasCallbackQuery()){
+            if (update.getCallbackQuery().getData().equals("level_4_task")){
+                SendAnimation anim = new SendAnimation();
+
+                InputFile inputFile = new InputFile();
+                inputFile.setMedia(new File("images/final.gif"));
+                anim.setAnimation(inputFile);
+
+                anim.setCaption("*Джавелін твій. Повний вперед!*");
+                anim.setParseMode("markdown");
+
+                anim.setChatId(chatId);
+                executeAsync(anim);
             }
         }
     }
@@ -177,7 +243,7 @@ public class Main extends TelegramLongPollingBot{
 
     public void sendImage(String img_name, Long chatId){
         SendAnimation animation = new SendAnimation();
-
+        SendMessage message = new SendMessage();
         InputFile inputFile = new InputFile();
         inputFile.setMedia(new File("images/" + img_name + ".gif"));
 
@@ -193,6 +259,12 @@ public class Main extends TelegramLongPollingBot{
 
     public void setLevel(Long chatId, int level) {
         levels.put(chatId, level);
+    }
+
+    public List<String> getRandom3(List<String> variants){
+        ArrayList<String> copy = new ArrayList<>(variants);
+        Collections.shuffle(copy);
+        return copy.subList(0,3);
     }
 
     public Long getChatId(Update update){
